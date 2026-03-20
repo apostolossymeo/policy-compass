@@ -4,10 +4,10 @@ import ArticleSidebar from "@/components/ArticleSidebar";
 import ComparisonView from "@/components/ComparisonView";
 
 const Index = () => {
-  const [activeId, setActiveId] = useState("article-3");
+  const [activeId, setActiveId] = useState("scope");
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden bg-background">
       <Header />
       <div className="flex flex-1 min-h-0">
         <ArticleSidebar activeId={activeId} onSelect={setActiveId} />
