@@ -1,11 +1,19 @@
 import { useSectionDocuments } from "@/hooks/useLaws";
-import { useLawSections } from "@/hooks/useLaws";
 import DocumentPanel from "./DocumentPanel";
 import { Info, TrendingUp, AlertTriangle, Check } from "lucide-react";
 import { useState } from "react";
 
+interface SectionMeta {
+  id: string;
+  title: string;
+  plain_title: string;
+  why_it_matters: string | null;
+  similarity_lobbyist_final: number | null;
+}
+
 interface ComparisonViewProps {
   activeId: string;
+  sectionMeta?: SectionMeta;
 }
 
 const sourceColorMap: Record<string, string> = {
@@ -17,18 +25,9 @@ const sourceColorMap: Record<string, string> = {
 
 const sourceOrder = ["commission", "lobbyist", "final_law", "omnibus"];
 
-const ComparisonView = ({ activeId }: ComparisonViewProps) => {
+const ComparisonView = ({ activeId, sectionMeta }: ComparisonViewProps) => {
   const { data: documents, isLoading } = useSectionDocuments(activeId || undefined);
   const [showExplainer, setShowExplainer] = useState(true);
-
-  // We need section metadata — get from parent query via URL
-  // For now, find the section from the documents' section_id
-  // Use a separate query for the section info
-  const { data: allSections } = useLawSections(undefined);
-
-  // Find current section by matching activeId
-  // activeId is the section UUID
-  const sectionMeta = allSections?.find((s) => s.id === activeId);
 
   if (isLoading || !documents) {
     return (

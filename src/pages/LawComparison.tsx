@@ -55,6 +55,8 @@ const LawComparison = () => {
     plainTitle: s.plain_title,
   }));
 
+  const currentSection = sections.find((s) => s.id === activeId);
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background">
       <Header />
@@ -71,7 +73,7 @@ const LawComparison = () => {
       </div>
       <div className="flex flex-1 min-h-0">
         <ArticleSidebar activeId={activeId} onSelect={setActiveId} navItems={navItems} />
-        <ComparisonView activeId={activeId} />
+        <ComparisonView activeId={activeId} sectionMeta={currentSection} />
       </div>
     </div>
   );
