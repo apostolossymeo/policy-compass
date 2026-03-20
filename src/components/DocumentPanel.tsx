@@ -1,3 +1,5 @@
+import HighlightedText from "./HighlightedText";
+
 interface DocumentPanelProps {
   title: string;
   subtitle: string;
@@ -5,29 +7,6 @@ interface DocumentPanelProps {
   highlights: string[];
   colorClass: string;
   delay: string;
-}
-
-function renderHighlightedText(text: string, highlights: string[]) {
-  if (!highlights.length) return <span>{text}</span>;
-
-  const regex = new RegExp(
-    `(${highlights.map((h) => h.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`,
-    "gi"
-  );
-  const parts = text.split(regex);
-
-  return (
-    <>
-      {parts.map((part, i) => {
-        const isMatch = highlights.some((h) => h.toLowerCase() === part.toLowerCase());
-        return isMatch ? (
-          <mark key={i} className="text-highlight">{part}</mark>
-        ) : (
-          <span key={i}>{part}</span>
-        );
-      })}
-    </>
-  );
 }
 
 const DocumentPanel = ({ title, subtitle, text, highlights, colorClass, delay }: DocumentPanelProps) => (
@@ -43,9 +22,7 @@ const DocumentPanel = ({ title, subtitle, text, highlights, colorClass, delay }:
       <p className="text-[11px] text-muted-foreground pl-[18px]">{subtitle}</p>
     </div>
     <div className="p-4 flex-1 panel-scroll overflow-y-auto">
-      <p className="text-[13px] leading-[1.7] text-foreground/85">
-        {renderHighlightedText(text, highlights)}
-      </p>
+      <HighlightedText text={text} highlights={highlights} />
     </div>
   </div>
 );
