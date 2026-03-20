@@ -34,8 +34,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "eu-blue": "hsl(var(--eu-blue))",
+        "eu-blue-light": "hsl(var(--eu-blue-light))",
         "eu-gold": "hsl(var(--eu-gold))",
-        "panel-border": "hsl(var(--panel-border))",
+        "eu-gold-light": "hsl(var(--eu-gold-light))",
+        "panel-border": "hsl(var(--border))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -43,8 +46,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["'Source Sans 3'", "system-ui", "sans-serif"],
-        serif: ["'Source Serif 4'", "Georgia", "serif"],
+        sans: ["'Inter'", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
