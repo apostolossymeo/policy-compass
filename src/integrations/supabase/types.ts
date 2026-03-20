@@ -14,7 +14,121 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      law_sections: {
+        Row: {
+          created_at: string
+          id: string
+          law_id: string
+          plain_title: string
+          similarity_lobbyist_final: number | null
+          slug: string
+          sort_order: number
+          title: string
+          why_it_matters: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          law_id: string
+          plain_title: string
+          similarity_lobbyist_final?: number | null
+          slug: string
+          sort_order?: number
+          title: string
+          why_it_matters?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          law_id?: string
+          plain_title?: string
+          similarity_lobbyist_final?: number | null
+          slug?: string
+          sort_order?: number
+          title?: string
+          why_it_matters?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "law_sections_law_id_fkey"
+            columns: ["law_id"]
+            isOneToOne: false
+            referencedRelation: "laws"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      laws: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          plain_title: string
+          slug: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          plain_title: string
+          slug: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          plain_title?: string
+          slug?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
+      section_documents: {
+        Row: {
+          body_text: string
+          created_at: string
+          highlights: string[] | null
+          id: string
+          section_id: string
+          source: Database["public"]["Enums"]["document_source"]
+          source_label: string
+          source_subtitle: string
+        }
+        Insert: {
+          body_text: string
+          created_at?: string
+          highlights?: string[] | null
+          id?: string
+          section_id: string
+          source: Database["public"]["Enums"]["document_source"]
+          source_label: string
+          source_subtitle: string
+        }
+        Update: {
+          body_text?: string
+          created_at?: string
+          highlights?: string[] | null
+          id?: string
+          section_id?: string
+          source?: Database["public"]["Enums"]["document_source"]
+          source_label?: string
+          source_subtitle?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "section_documents_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "law_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +137,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      document_source: "commission" | "lobbyist" | "final_law" | "omnibus"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +264,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      document_source: ["commission", "lobbyist", "final_law", "omnibus"],
+    },
   },
 } as const
