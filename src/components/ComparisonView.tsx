@@ -1,35 +1,66 @@
-import { useState } from "react";
-import { sections } from "@/data/csdddSampleData";
+import { useSectionDocuments } from "@/hooks/useLaws";
+import { useLawSections } from "@/hooks/useLaws";
 import DocumentPanel from "./DocumentPanel";
-import SimilarityBadge from "./SimilarityBadge";
 import { Info, TrendingUp, AlertTriangle, Check } from "lucide-react";
+import { useState } from "react";
 
 interface ComparisonViewProps {
   activeId: string;
 }
 
+const sourceColorMap: Record<string, string> = {
+  commission: "bg-primary",
+  lobbyist: "bg-amber-500",
+  final_law: "bg-emerald-500",
+  omnibus: "bg-red-500",
+};
+
+const sourceOrder = ["commission", "lobbyist", "final_law", "omnibus"];
+
 const ComparisonView = ({ activeId }: ComparisonViewProps) => {
-  const section = sections.find((s) => s.id === activeId) ?? sections[0];
+  const { data: documents, isLoading } = useSectionDocuments(activeId || undefined);
   const [showExplainer, setShowExplainer] = useState(true);
 
-  const score = section.similarityLobbyistFinal;
+  // We need section metadata — get from parent query via URL
+  // For now, find the section from the documents' section_id
+  // Use a separate query for the section info
+  const { data: allSections } = useLawSections(undefined);
+
+  // Find current section by matching activeId
+  // activeId is the section UUID
+  const sectionMeta = allSections?.find((s) => s.id === activeId);
+
+  if (isLoading || !documents) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const score = sectionMeta?.similarity_lobbyist_final ?? 0;
   const verdict =
     score >= 80
-      ? { icon: AlertTriangle, text: "High industry influence detected", color: "text-red-600 bg-red-50 border-red-200" }
+      ? { icon: AlertTriangle, text: "High industry influence", color: "text-red-600 bg-red-50 border-red-200" }
       : score >= 60
-      ? { icon: TrendingUp, text: "Moderate industry influence", color: "text-amber-600 bg-amber-50 border-amber-200" }
-      : { icon: Check, text: "Low industry influence", color: "text-emerald-600 bg-emerald-50 border-emerald-200" };
+      ? { icon: TrendingUp, text: "Moderate influence", color: "text-amber-600 bg-amber-50 border-amber-200" }
+      : { icon: Check, text: "Low influence", color: "text-emerald-600 bg-emerald-50 border-emerald-200" };
 
   const VerdictIcon = verdict.icon;
 
+  const sortedDocs = [...documents].sort(
+    (a, b) => sourceOrder.indexOf(a.source) - sourceOrder.indexOf(b.source)
+  );
+
   return (
     <div className="flex-1 flex flex-col p-5 gap-4 overflow-hidden min-w-0">
-      {/* Top bar */}
       <div className="animate-fade-in-up" style={{ animationDelay: "120ms" }}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-foreground leading-tight">{section.plainTitle}</h2>
-            <p className="text-sm text-muted-foreground mt-1">{section.title}</p>
+            <h2 className="text-xl font-bold text-foreground leading-tight">
+              {sectionMeta?.plain_title || "Comparison"}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">{sectionMeta?.title}</p>
           </div>
           <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium shrink-0 ${verdict.color}`}>
             <VerdictIcon className="w-4 h-4" />
@@ -38,11 +69,11 @@ const ComparisonView = ({ activeId }: ComparisonViewProps) => {
           </div>
         </div>
 
-        {showExplainer && (
+        {showExplainer && sectionMeta?.why_it_matters && (
           <div className="mt-3 bg-eu-blue-light rounded-lg p-3 flex items-start gap-2.5 border border-primary/10">
             <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
             <p className="text-xs text-foreground/80 leading-relaxed flex-1">
-              <strong>Why it matters:</strong> {section.whyItMatters}
+              <strong>Why it matters:</strong> {sectionMeta.why_it_matters}
             </p>
             <button
               onClick={() => setShowExplainer(false)}
@@ -54,43 +85,20 @@ const ComparisonView = ({ activeId }: ComparisonViewProps) => {
         )}
       </div>
 
-      {/* Four panels in a 2×2 grid */}
       <div className="flex-1 grid grid-cols-2 gap-3 min-h-0 overflow-hidden">
-        <DocumentPanel
-          title="Original Proposal"
-          subtitle="European Commission — Feb 2022"
-          text={section.commission.text}
-          highlights={section.commission.highlights}
-          colorClass="bg-primary"
-          delay="180ms"
-        />
-        <DocumentPanel
-          title="Industry Position"
-          subtitle="BusinessEurope Lobbying Paper"
-          text={section.lobbyist.text}
-          highlights={section.lobbyist.highlights}
-          colorClass="bg-amber-500"
-          delay="240ms"
-        />
-        <DocumentPanel
-          title="Final Adopted Law"
-          subtitle="Directive 2024/1760 — Jul 2024"
-          text={section.finalLaw.text}
-          highlights={section.finalLaw.highlights}
-          colorClass="bg-emerald-500"
-          delay="300ms"
-        />
-        <DocumentPanel
-          title="Omnibus Rollback"
-          subtitle="COM/2025/81 — Feb 2025"
-          text={section.omnibus.text}
-          highlights={section.omnibus.highlights}
-          colorClass="bg-red-500"
-          delay="360ms"
-        />
+        {sortedDocs.map((doc, i) => (
+          <DocumentPanel
+            key={doc.id}
+            title={doc.source_label}
+            subtitle={doc.source_subtitle}
+            text={doc.body_text}
+            highlights={doc.highlights || []}
+            colorClass={sourceColorMap[doc.source] || "bg-muted-foreground"}
+            delay={`${180 + i * 60}ms`}
+          />
+        ))}
       </div>
 
-      {/* Legend */}
       <div className="flex items-center gap-5 text-[11px] text-muted-foreground pt-1 animate-fade-in" style={{ animationDelay: "500ms" }}>
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-primary" /> Commission original</span>
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> Industry lobby</span>
